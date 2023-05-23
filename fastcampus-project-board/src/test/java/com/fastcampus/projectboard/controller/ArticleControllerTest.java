@@ -38,7 +38,6 @@ class ArticleControllerTest {
 
     }
 
-    @Disabled("구현 중")
     @DisplayName("[view][GET] 게시글 상세 페이지")
     @Test
     public void givenNoting_whenRequestingArticleView_thenReturnsArticleView() throws Exception {
@@ -48,7 +47,7 @@ class ArticleControllerTest {
         //When
         mvc.perform(get("/articles/1"))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.TEXT_HTML))
+                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
                 .andExpect(view().name("articles/detail"))
                 .andExpect(model().attributeExists("article"))
                 .andExpect(model().attributeExists("articleComments"));
