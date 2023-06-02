@@ -7,7 +7,7 @@ import lombok.*;
 import java.util.Objects;
 
 @Getter
-@ToString
+@ToString(callSuper = true)
 @Table(indexes = {
         @Index(columnList = "content"),
         @Index(columnList = "createdAt"),
@@ -25,13 +25,18 @@ public class ArticleComment extends BaseEntity {
     @Setter @ManyToOne(optional = false , fetch = FetchType.LAZY)
     private Article article;
 
-    private ArticleComment(String content, Article article) {
+    @Setter
+    @ManyToOne(optional = false , fetch = FetchType.LAZY)
+    private UserAccount userAccount;
+
+    private ArticleComment(UserAccount userAccount , String content, Article article) {
+        this.userAccount = userAccount;
         this.content = content;
         this.article = article;
     }
 
-    public static ArticleComment of(Article article , String content) {
-        return new ArticleComment(content , article);
+    public static ArticleComment of(UserAccount userAccount , Article article , String content) {
+        return new ArticleComment(userAccount ,content , article);
     }
 
     @Override

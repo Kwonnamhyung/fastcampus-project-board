@@ -9,7 +9,7 @@ import java.util.Objects;
 import java.util.Set;
 
 @Getter
-@ToString
+@ToString(callSuper = true)
 @Table(indexes = {
         @Index(columnList = "title"),
         @Index(columnList = "hashtag"),
@@ -30,17 +30,22 @@ public class Article extends BaseEntity {
     @Setter
     private String hashtag;
 
-    @OneToMany(mappedBy = "article" , cascade = CascadeType.ALL , fetch = FetchType.LAZY) @OrderBy("id") @ToString.Exclude // tostring 연관관계 참조 끊는것
+    @Setter
+    @ManyToOne(optional = false , fetch = FetchType.LAZY)
+    private UserAccount userAccount;
+
+    @OneToMany(mappedBy = "article" , cascade = CascadeType.ALL , fetch = FetchType.LAZY) @OrderBy("createdAt DESC ") @ToString.Exclude // tostring 연관관계 참조 끊는것
     private final Set<ArticleComment> articleComment = new LinkedHashSet<>();
 
-    private Article(String title, String content, String hashtag) {
+    private Article(UserAccount userAccount , String title, String content, String hashtag) {
+        this.userAccount = userAccount;
         this.title = title;
         this.content = content;
         this.hashtag = hashtag;
     }
 
-    public static Article of(String title , String content , String hashtag) {
-        return new Article(title , content , hashtag);
+    public static Article of(UserAccount userAccount , String title , String content , String hashtag) {
+        return new Article(userAccount ,title , content , hashtag);
     }
 
     @Override
