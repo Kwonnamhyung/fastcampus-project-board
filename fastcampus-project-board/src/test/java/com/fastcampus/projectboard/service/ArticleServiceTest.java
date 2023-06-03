@@ -1,6 +1,7 @@
 package com.fastcampus.projectboard.service;
 
 import com.fastcampus.projectboard.domain.Article;
+import com.fastcampus.projectboard.domain.UserAccount;
 import com.fastcampus.projectboard.domain.type.SearchType;
 import com.fastcampus.projectboard.dto.ArticleDto;
 import com.fastcampus.projectboard.dto.ArticleUpdateDto;
@@ -13,8 +14,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
-import java.time.LocalDateTime;
+import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.*;
@@ -32,20 +34,42 @@ class ArticleServiceTest {
     @DisplayName("게시글을 검색하면 , 게시글 리스트 반환")
     @Test
     void givenSearchParameter_whenSearchingArticles_thenReturnsArticleList() {
-
-        Page<ArticleDto> articles = sut.searchArticles(SearchType.TITLE, "test");
+        Pageable pageable = Pageable.ofSize(20);
+        String title = "title";
+        SearchType type = SearchType.TITLE;
+        given(articleRepository.findByTitleContaining(title , pageable)).willReturn(Page.empty());
+        Page<ArticleDto.Response> articles = sut.searchArticles(SearchType.TITLE, "title" , pageable);
 
         Assertions.assertThat(articles).isNotNull();
 
+    }
+
+    @DisplayName("키워드 없이 검색할 경우 , 게시글 전체 리스트 반환")
+    @Test
+    void givenNothingKeyword_whenSearchingArticles_thenReturnsAllArticleList() {
+
+
+        Pageable pageable = Pageable.ofSize(20);
+        given(articleRepository.findAll(pageable)).willReturn(Page.empty());
+
+        sut.searchArticles(SearchType.TITLE ,null,pageable);
+
+        then(articleRepository).should().findAll(pageable);
     }
 
     @DisplayName("게시글을 조회하면 , 게시글 반환")
     @Test
     void givenArticleId_whenSearchingArticle_thenReturnsArticle() {
 
-        ArticleDto article = sut.searchArticle(1L);
+        Long articleId = 1L;
+        UserAccount userAccount = UserAccount.of("knh", "1234", "knh@gmail.com", "knh", "memo");
+        Article article = Article.of(userAccount, "title", "content", "hashtag");
+        given(articleRepository.findById(articleId)).willReturn(Optional.of(article));
 
-        Assertions.assertThat(article).isNotNull();
+        ArticleDto.ResponseWithComment responseWithComment = sut.searchArticle(articleId);
+
+        Assertions.assertThat(responseWithComment).isNotNull();
+        Assertions.assertThat(responseWithComment.getTitle()).isEqualTo("title");
 
     }
 
@@ -53,10 +77,13 @@ class ArticleServiceTest {
     @Test
     void givenArticleInfo_whenSavingArticle_thenSavesArticle(){
 
-        ArticleDto dto = ArticleDto.of(LocalDateTime.now() , "KNH" , "TEST" , "TESTCONTENT" , "HASHTAG");
+        Long articleId = 1L;
+        UserAccount userAccount = UserAccount.of("knh", "1234", "knh@gmail.com", "knh", "memo");
+        Article article = Article.of(userAccount, "title", "content", "hashtag");
+        ArticleDto.Request request = Article.entityToRequest(article);
         given(articleRepository.save(any(Article.class))).willReturn(null);
 
-        sut.saveArticle(dto);
+        sut.saveArticle(request);
 
         then(articleRepository).should().save(any(Article.class));
 
@@ -66,12 +93,19 @@ class ArticleServiceTest {
     @Test
     void givenArticleIDAndModifiedInfo_whenUpdatingArticle_thenUpdatesArticle(){
 
+        Long articleId = 1L;
+        UserAccount userAccount = UserAccount.of("knh", "1234", "knh@gmail.com", "knh", "memo");
+        Article article = Article.of(userAccount, "title", "content", "hashtag");
         ArticleUpdateDto dto = ArticleUpdateDto.of("TEST" , "TESTCONTENT" , "HASHTAG");
-        given(articleRepository.save(any(Article.class))).willReturn(null);
 
-        sut.updateArticle(1L , dto);
+        given(articleRepository.getReferenceById(articleId)).willReturn(article);
+        given(articleRepository.findById(articleId)).willReturn(Optional.of(article));
 
-        then(articleRepository).should().save(any(Article.class));
+        sut.updateArticle(articleId , dto);
+
+        ArticleDto.ResponseWithComment response = sut.searchArticle(articleId);
+
+        Assertions.assertThat(response.getTitle()).isEqualTo("TEST");
 
     }
 
@@ -79,11 +113,12 @@ class ArticleServiceTest {
     @Test
     void givenArticleID_whenDeletingArticle_thenDeleteArticle(){
 
-        willDoNothing().given(articleRepository).delete(any(Article.class));
+        Long articleId = 1L;
+        willDoNothing().given(articleRepository).deleteById(articleId);
 
-        sut.deleteArticle(1L);
+        sut.deleteArticle(articleId);
 
-        then(articleRepository).should().delete(any(Article.class));
+        then(articleRepository).should().deleteById(articleId);
 
     }
 }

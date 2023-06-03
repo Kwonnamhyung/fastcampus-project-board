@@ -8,7 +8,7 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/board
     username: root
-    password: ko731673ko!@
+    password: mysql
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:

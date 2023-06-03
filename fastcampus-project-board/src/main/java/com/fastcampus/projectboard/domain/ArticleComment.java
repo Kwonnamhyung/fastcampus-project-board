@@ -1,6 +1,7 @@
 package com.fastcampus.projectboard.domain;
 
 import com.fastcampus.projectboard.common.domain.BaseEntity;
+import com.fastcampus.projectboard.dto.ArticleCommentDto;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -37,6 +38,9 @@ public class ArticleComment extends BaseEntity {
 
     public static ArticleComment of(UserAccount userAccount , Article article , String content) {
         return new ArticleComment(userAccount ,content , article);
+    }
+    public static ArticleCommentDto from(ArticleComment entity) {
+        return ArticleCommentDto.of(entity.getCreatedAt() , entity.getCreatedBy() , entity.getModifiedAt() , entity.getModifiedBy() , entity.getContent());
     }
 
     @Override

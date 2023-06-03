@@ -1,12 +1,12 @@
 package com.fastcampus.projectboard.domain;
 
 import com.fastcampus.projectboard.common.domain.BaseEntity;
+import com.fastcampus.projectboard.dto.ArticleCommentDto;
+import com.fastcampus.projectboard.dto.ArticleDto;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.LinkedHashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 @Getter
 @ToString(callSuper = true)
@@ -35,7 +35,7 @@ public class Article extends BaseEntity {
     private UserAccount userAccount;
 
     @OneToMany(mappedBy = "article" , cascade = CascadeType.ALL , fetch = FetchType.LAZY) @OrderBy("createdAt DESC ") @ToString.Exclude // tostring 연관관계 참조 끊는것
-    private final Set<ArticleComment> articleComment = new LinkedHashSet<>();
+    private final List<ArticleComment> articleComment = new LinkedList<>();
 
     private Article(UserAccount userAccount , String title, String content, String hashtag) {
         this.userAccount = userAccount;
@@ -46,6 +46,48 @@ public class Article extends BaseEntity {
 
     public static Article of(UserAccount userAccount , String title , String content , String hashtag) {
         return new Article(userAccount ,title , content , hashtag);
+    }
+
+    public static Article toEntity(ArticleDto.Request request) {
+        return Article.of(UserAccount.toEntity(request.getUserAccountDto()) , request.getTitle() , request.getContent() ,request.getHashtag());
+    }
+
+    public static ArticleDto.Request entityToRequest(Article entity) {
+        return new ArticleDto.Request(
+                entity.getTitle(),
+                entity.getContent(),
+                entity.getHashtag(),
+                UserAccount.from(entity.getUserAccount()),
+                entity.getCreatedBy(),
+                entity.getCreatedAt(),
+                entity.getModifiedBy(),
+                entity.getModifiedAt()
+        );
+    }
+
+    public static ArticleDto.Response entityToResponse(Article entity) {
+        return new ArticleDto.Response(
+                entity.getId(),
+                entity.getTitle(),
+                entity.getContent(),
+                entity.getHashtag(),
+                UserAccount.from(entity.getUserAccount()),
+                entity.getCreatedBy(),
+                entity.getCreatedAt(),
+                entity.getModifiedBy(),
+                entity.getModifiedAt()
+        );
+    }
+
+    public static ArticleDto.ResponseWithComment entityToResponseWithComment(Article entity) {
+        return new ArticleDto.ResponseWithComment(
+                entity.getId(),
+                entity.getTitle(),
+                entity.getContent(),
+                entity.getHashtag(),
+                UserAccount.from(entity.getUserAccount()),
+                getArticleCommentDtoList(entity.getArticleComment())
+        );
     }
 
     @Override
@@ -59,5 +101,15 @@ public class Article extends BaseEntity {
     @Override
     public int hashCode() {
         return Objects.hash(getId());
+    }
+
+    private static List<ArticleCommentDto> getArticleCommentDtoList(List<ArticleComment> articleCommentList) {
+
+        List<ArticleCommentDto> resultList = new LinkedList<>();
+        for(ArticleComment articleComment : articleCommentList) {
+            resultList.add(ArticleComment.from(articleComment));
+        }
+
+        return resultList;
     }
 }
