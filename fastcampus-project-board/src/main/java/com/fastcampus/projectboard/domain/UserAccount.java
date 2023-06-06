@@ -1,6 +1,7 @@
 package com.fastcampus.projectboard.domain;
 
 import com.fastcampus.projectboard.common.domain.BaseEntity;
+import com.fastcampus.projectboard.dto.UserAccountDto;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -39,6 +40,24 @@ public class UserAccount extends BaseEntity {
 
     public static UserAccount of(String userId , String userPassword , String  email , String nickname , String memo) {
         return new UserAccount(userId , userPassword , email , nickname , memo);
+    }
+
+    public static UserAccount toEntity(UserAccountDto dto) {
+        return UserAccount.of(dto.getUserAccountId() , dto.getUserAccountPassword() , dto.getEmail(), dto.getNickname(), dto.getMemo());
+    }
+
+    public static UserAccountDto from(UserAccount entity) {
+        return new UserAccountDto(
+                entity.getUserId(),
+                entity.getUserPassword(),
+                entity.getEmail(),
+                entity.getNickname(),
+                entity.getMemo() ,
+                entity.getCreatedBy(),
+                entity.getCreatedAt(),
+                entity.getModifiedBy(),
+                entity.getModifiedAt()
+        );
     }
 
     @Override

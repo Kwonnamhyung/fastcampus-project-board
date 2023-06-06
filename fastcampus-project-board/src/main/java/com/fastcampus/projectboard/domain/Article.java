@@ -1,15 +1,15 @@
 package com.fastcampus.projectboard.domain;
 
 import com.fastcampus.projectboard.common.domain.BaseEntity;
+import com.fastcampus.projectboard.dto.ArticleCommentDto;
+import com.fastcampus.projectboard.dto.ArticleDto;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.LinkedHashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 @Getter
-@ToString
+@ToString(callSuper = true)
 @Table(indexes = {
         @Index(columnList = "title"),
         @Index(columnList = "hashtag"),
@@ -30,17 +30,68 @@ public class Article extends BaseEntity {
     @Setter
     private String hashtag;
 
-    @OneToMany(mappedBy = "article" , cascade = CascadeType.ALL , fetch = FetchType.LAZY) @OrderBy("id") @ToString.Exclude // tostring 연관관계 참조 끊는것
-    private final Set<ArticleComment> articleComment = new LinkedHashSet<>();
+    @Setter
+    @ManyToOne(optional = false , fetch = FetchType.LAZY)
+    private UserAccount userAccount;
 
-    private Article(String title, String content, String hashtag) {
+    @OneToMany(mappedBy = "article" , cascade = CascadeType.ALL , fetch = FetchType.LAZY) @OrderBy("createdAt DESC ") @ToString.Exclude // tostring 연관관계 참조 끊는것
+    private final List<ArticleComment> articleComment = new LinkedList<>();
+
+    private Article(UserAccount userAccount , String title, String content, String hashtag) {
+        this.userAccount = userAccount;
         this.title = title;
         this.content = content;
         this.hashtag = hashtag;
     }
 
-    public static Article of(String title , String content , String hashtag) {
-        return new Article(title , content , hashtag);
+    public static Article of(UserAccount userAccount , String title , String content , String hashtag) {
+        return new Article(userAccount ,title , content , hashtag);
+    }
+
+    public static Article toEntity(ArticleDto.Request request) {
+        return Article.of(UserAccount.toEntity(request.getUserAccountDto()) , request.getTitle() , request.getContent() ,request.getHashtag());
+    }
+
+    public static ArticleDto.Request entityToRequest(Article entity) {
+        return new ArticleDto.Request(
+                entity.getTitle(),
+                entity.getContent(),
+                entity.getHashtag(),
+                UserAccount.from(entity.getUserAccount()),
+                entity.getCreatedBy(),
+                entity.getCreatedAt(),
+                entity.getModifiedBy(),
+                entity.getModifiedAt()
+        );
+    }
+
+    public static ArticleDto.Response entityToResponse(Article entity) {
+        return new ArticleDto.Response(
+                entity.getId(),
+                entity.getTitle(),
+                entity.getContent(),
+                entity.getHashtag(),
+                UserAccount.from(entity.getUserAccount()),
+                entity.getCreatedBy(),
+                entity.getCreatedAt(),
+                entity.getModifiedBy(),
+                entity.getModifiedAt()
+        );
+    }
+
+    public static ArticleDto.ResponseWithComment entityToResponseWithComment(Article entity) {
+        return new ArticleDto.ResponseWithComment(
+                entity.getId(),
+                entity.getTitle(),
+                entity.getContent(),
+                entity.getHashtag(),
+                UserAccount.from(entity.getUserAccount()),
+                getArticleCommentDtoList(entity.getArticleComment()),
+                entity.getCreatedBy(),
+                entity.getCreatedAt(),
+                entity.getModifiedBy(),
+                entity.getModifiedAt()
+        );
     }
 
     @Override
@@ -54,5 +105,15 @@ public class Article extends BaseEntity {
     @Override
     public int hashCode() {
         return Objects.hash(getId());
+    }
+
+    private static List<ArticleCommentDto> getArticleCommentDtoList(List<ArticleComment> articleCommentList) {
+
+        List<ArticleCommentDto> resultList = new LinkedList<>();
+        for(ArticleComment articleComment : articleCommentList) {
+            resultList.add(ArticleComment.from(articleComment));
+        }
+
+        return resultList;
     }
 }
