@@ -40,7 +40,7 @@ public class ArticleComment extends BaseEntity {
         return new ArticleComment(userAccount ,content , article);
     }
     public static ArticleCommentDto from(ArticleComment entity) {
-        return ArticleCommentDto.of(entity.getCreatedAt() , entity.getCreatedBy() , entity.getModifiedAt() , entity.getModifiedBy() , entity.getContent());
+        return ArticleCommentDto.of(entity.getCreatedAt() , entity.getCreatedBy() , entity.getModifiedAt() , entity.getModifiedBy() , entity.getUserAccount().getNickname() , entity.getContent());
     }
 
     @Override

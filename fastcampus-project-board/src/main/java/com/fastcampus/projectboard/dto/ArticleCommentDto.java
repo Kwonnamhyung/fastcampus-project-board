@@ -13,10 +13,11 @@ public class ArticleCommentDto {
     private final String createdBy;
     private final LocalDateTime modifiedAt;
     private final String modifiedBy;
+    private final String nickname;
     private final String content;
 
 
-    public static ArticleCommentDto of(LocalDateTime createdAt , String createdBy , LocalDateTime modifiedAt , String modifiedBy , String content) {
-        return new ArticleCommentDto(createdAt, createdBy, modifiedAt, modifiedBy, content);
+    public static ArticleCommentDto of(LocalDateTime createdAt , String createdBy , LocalDateTime modifiedAt , String modifiedBy , String nickname , String content) {
+        return new ArticleCommentDto(createdAt, createdBy, modifiedAt, modifiedBy, nickname ,content);
     }
 }

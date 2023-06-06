@@ -86,7 +86,11 @@ public class Article extends BaseEntity {
                 entity.getContent(),
                 entity.getHashtag(),
                 UserAccount.from(entity.getUserAccount()),
-                getArticleCommentDtoList(entity.getArticleComment())
+                getArticleCommentDtoList(entity.getArticleComment()),
+                entity.getCreatedBy(),
+                entity.getCreatedAt(),
+                entity.getModifiedBy(),
+                entity.getModifiedAt()
         );
     }
 

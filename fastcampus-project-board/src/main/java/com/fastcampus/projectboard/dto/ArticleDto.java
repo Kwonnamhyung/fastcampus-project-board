@@ -70,13 +70,23 @@ public class ArticleDto {
         private final UserAccountDto userAccountDto;
         private final List<ArticleCommentDto> articleCommentList;
 
-        public ResponseWithComment(Long articleId ,String title, String content, String hashtag, UserAccountDto userAccountDto, List<ArticleCommentDto> articleCommentList) {
+        private final String createdBy;
+        private final LocalDateTime createdAt;
+        private final String modifiedBy;
+        private final LocalDateTime modifiedAt;
+
+
+        public ResponseWithComment(Long articleId, String title, String content, String hashtag, UserAccountDto userAccountDto, List<ArticleCommentDto> articleCommentList, String createdBy, LocalDateTime createdAt, String modifiedBy, LocalDateTime modifiedAt) {
             this.articleId = articleId;
             this.title = title;
             this.content = content;
             this.hashtag = hashtag;
             this.userAccountDto = userAccountDto;
             this.articleCommentList = articleCommentList;
+            this.createdBy = createdBy;
+            this.createdAt = createdAt;
+            this.modifiedBy = modifiedBy;
+            this.modifiedAt = modifiedAt;
         }
     }
 }
